@@ -8,9 +8,13 @@ Mais rien n'est prévu pour extraire les clefs privées ou symétriques. Au cont
 **D'autre part**, le *Keystore* gère les droits d'utilisation du matériel crryptographique selon le principe de la *white list*. Cela veut dire que seule les applications explicitement autorisées à l'utilisation d'une certaine clef y on accès. Typiquement, si une application `A` chiffre des données en passant par le *Keystore*, alors une application `B` ne pourra pas accéder aux clefs utilisées par l'application `A`, sauf en cas d'autorisation explicite. 
 
 ## Problème résolu et limitations
-Grâce au *Keystore*, le développeur d'application Android n'aura qu'à ajouter quelques lignes de codes pour chiffrer des données. Il aura à choisir un algorithme parmi un choix limité. En outre, l'API d'utilisation du Keystore est faite de telle manière à ce que 
+Grâce au *Keystore*, le développeur d'application Android n'aura qu'à ajouter quelques lignes de codes pour chiffrer des données. Il aura à choisir un algorithme parmi un choix limité. En outre, l'API d'utilisation du Keystore est faite de telle manière à éviter les erreurs comme la réutilisation de vecteurs d'initialisation (IV). Utiliser les API du *Keystore* rend donc la gestion des clefs beaucoup plus facile et permet d'éviter certaines erreurs de programmation qui pourraient complètetment compromettre la confidentialité, l'intégrité et l'authenticité des données. Par exemple, l'algorithme de signature digitale asymétrique DSA nécessite de tirer une valeur aléatoire pour chaque signature. Si la même valeur est réutilisée pour 2 signatures différentes, alors il devient possible de retrouver la clef privée.  
+Par rapport aux limitations, il y a selon nous le trop grand choix d'algorithmes offerts. Certains ne sont plus à recommander aujourd'hui, comme DES pour le chiffrement symétrique. Il peut être difficile de s'y retrouver pour un développeur sans connaissances en cryptographie et des mauvais choix peuvent facilement être faits. C'est pourquoi nous proposons dans le point suivant quelques bons choix.
 
-- choix limité des algorithmes 
+## Choix des algorithmes
+
+Cependant, un très large choix d'algorithmes sont proposés, dont beaucoup sont à éviter car plus sécurisé aujourd'hui. Leur présence est due à des questions de rétrocompatibilité.
+Cela n'est vrai que si l'on n'utilise pas 
 ## Alternatives
 
 ## Example d'utilisation
