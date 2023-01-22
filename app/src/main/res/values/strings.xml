@@ -1,9 +1,6 @@
 <resources>
     <string name="app_name">Labo1</string>
-    <string name="ask_for_name">Bienvenue, veuillez entrer votre nom</string>
-    <string name="welcome_user">Bienvenue %s</string>
-    <string name="edit">EDITER</string>
-    <string name="save">SAUVER</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="config_step">Step</string></resources>
+    <string name="default_msg_to_encrypt">Message to encrypt</string>
+    <string name="encrypt">Encrypt</string>
+    <string name="decrypt">Decrypt</string>
+</resources>

@@ -9,64 +9,37 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import ch.heigvd.daa.keystore.contract.PickNameContract
+import java.io.File
 
-private const val SAVED_STATE_NAME_KEY = "NAME"
 
 /**
  * Displays a personalized welcome message and allows the user to edit his name.
  */
 class MainActivity : AppCompatActivity() {
+    //    private val encryptionUtils = EncryptionUtils()
+    private val keystore = EncryptorSym("secret")
+    private lateinit var encryptedMsg : EncryptedFileBox
+    private lateinit var decryptedMsg : ByteArray
 
-    private var name: String? = null
 
-    // Collect the username through the contract with the EditName class
-    private val manageUsername = registerForActivityResult(PickNameContract()) {
-        if (it != null) {
-            name = it
-            updateWelcomeText()
-        }
-
-    }
-
-    /**
-     * Displays a layout with
-     * - A welcome text based on the user name
-     * - A button that allows the user to edit his name
-     * If a previous activity state was saved, the user name is restored from it.
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        name = savedInstanceState?.getString(SAVED_STATE_NAME_KEY)
-
         setContentView(R.layout.activity_main)
+        val message = findViewById<TextView>(R.id.msg_to_encrypt)
+        message.text = "Hello"
 
-        updateWelcomeText()
-
-        // When the button is pressed, we retrieve the user name using the contract linked to manageUsername
-        findViewById<Button>(R.id.edit_button).setOnClickListener {
-            manageUsername.launch(name)
+        findViewById<Button>(R.id.encrypt_button).setOnClickListener {
+            encryptedMsg = keystore.encrypt(message.text.toString().encodeToByteArray())
+            findViewById<TextView>(R.id.encrypted_msg).text = encryptedMsg.iv.toString()
         }
-    }
 
-    /**
-     * Updates the welcome text displayed according to the user name.
-     * If the name is null, a generic welcome text is displayed.
-     * Otherwise, a personalized welcome text is displayed.
-     */
-    private fun updateWelcomeText() {
-        findViewById<TextView>(R.id.welcome).text =
-            if (name == null) getString(R.string.ask_for_name)
-            else getString(R.string.welcome_user, name)
-    }
+        findViewById<Button>(R.id.decrypt_button).setOnClickListener {
+            decryptedMsg = keystore.decrypt(
+                encryptedMsg
+            )
+            findViewById<TextView>(R.id.encrypted_msg).text = decryptedMsg.toString()
 
-    /**
-     * Saves the user name
-     */
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(SAVED_STATE_NAME_KEY, name)
-    }
+        }
 
+    }
 }
