@@ -96,6 +96,10 @@ La documentation Android propose [un petit guide sur la cryptographie](https://d
 
 Par rapport au chiffrement symétrique, si la clef n'est pas réutilisée très souvent et que les données à chiffrer n'excèdent jamais 64GB, nous conseillons d'utiliser GCM. En fait, c'est le meilleur cas pour la plupart des utilisations. ECB seul n'authentifie pas les données, donc si on veut garantir l'intégrité et l'authenticité des données en plus de la confidentialité, il faut l'utiliser en combinaison d'un MAC. Dans ce cas, nous conseillons de chiffrer puis d'authentifier les données (Encrypt-Then-Mac).
 
+## Exemple complet
+
+[Notre exemple complet](https://github.com/superjeffcplusplus/DAA_keystore) est une petite application qui chiffre et déchiffre une entrée utilisateur. Cela peut servir de base pour la prise en main du `KeyStore`.
+
 ## Liens utiles
 
 - [Documentation officielle sur le Keystore System](https://developer.android.com/training/articles/keystore#kotlin)
