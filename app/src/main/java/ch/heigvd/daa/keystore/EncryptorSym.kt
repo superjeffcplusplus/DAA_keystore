@@ -1,13 +1,14 @@
 package ch.heigvd.daa.keystore
 
+import android.security.KeyChain
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Log
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
-
 
 class EncryptorSym(private val keyAlias: String) {
 
@@ -22,7 +23,7 @@ class EncryptorSym(private val keyAlias: String) {
     }
 
     private fun generateKey(): SecretKey {
-        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+        val keyGenerator = KeyGenerator.getInstance(ALGORITHM, "AndroidKeyStore")
         val keyGenParameterSpec = KeyGenParameterSpec.Builder(
             keyAlias,
             KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
