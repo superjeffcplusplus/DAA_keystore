@@ -1,9 +1,7 @@
 package ch.heigvd.daa.keystore
 
-import android.security.KeyChain
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Log
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
