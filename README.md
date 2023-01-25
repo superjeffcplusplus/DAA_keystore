@@ -7,17 +7,14 @@ L'idée générale est **d'une part** de rendre l'extraction de l'appareil des c
 Mais rien n'est prévu pour extraire les clefs privées ou symétriques. Au contraire, tout est fait pour que cela soit rendu très difficile. Le *Keystore* est conçu pour offrir des caractéristiques similaires, tout en sachant que du harware dédié est indispensable si on a la nécessité d'un niveau maximal de protection.  
 **D'autre part**, le *Keystore* gère les droits d'utilisation du matériel crryptographique selon le principe de la *white list*. Cela veut dire que seule les applications explicitement autorisées à l'utilisation d'une certaine clef y on accès. Typiquement, si une application `A` chiffre des données en passant par le *Keystore*, alors une application `B` ne pourra pas accéder aux clefs utilisées par l'application `A`, sauf en cas d'autorisation explicite. 
 
-## Problème résolu et limitations
-Grâce au *Keystore*, le développeur d'application Android n'aura qu'à ajouter quelques lignes de codes pour chiffrer des données. Il aura à choisir un algorithme parmi un choix limité. En outre, l'API d'utilisation du Keystore est faite de telle manière à éviter les erreurs comme la réutilisation de vecteurs d'initialisation (IV). Utiliser les API du *Keystore* rend donc la gestion des clefs beaucoup plus facile et permet d'éviter certaines erreurs de programmation qui pourraient complètetment compromettre la confidentialité, l'intégrité et l'authenticité des données. Par exemple, l'algorithme de signature digitale asymétrique DSA nécessite de tirer une valeur aléatoire pour chaque signature. Si la même valeur est réutilisée pour 2 signatures différentes, alors il devient possible de retrouver la clef privée.  
-Par rapport aux limitations, il y a selon nous le trop grand choix d'algorithmes offerts. Certains ne sont plus à recommander aujourd'hui, comme DES pour le chiffrement symétrique. Il peut être difficile de s'y retrouver pour un développeur sans connaissances en cryptographie et des mauvais choix peuvent facilement être faits. C'est pourquoi nous proposons dans le point suivant quelques bons choix.
-
 ## Fonctionnement
 Android propose 2 API pour la gestion des données chiffrées:
 - L'API [`KeyChain`](https://developer.android.com/reference/android/security/KeyChain) est prévue pour des données partagées entre plusieurs applications.
 - L'API [`KeyStore`](https://developer.android.com/reference/java/security/KeyStore) est prévue pour les données propre à l'application.
 
-Dans ce qui suit, nous allons nous intéresser exclusivement à l'API `KeyStore`.  
+Dans ce qui suit, nous allons nous intéresser exclusivement à l'API `KeyStore`. Pour être plus exacte, Android ajoute une sur-couche à l'API Java standard `java.security.KeyStore` avec les classes de la librairie `android.security.keystore`.  
 Le pincipe de base est que les clefs sont générées avec une alias, qui sert ensuite à les retrouver. C'est la seule chose que le développeur doit sauvegarder. Ci-dessous, nous montrons un exemple de classe qui permet de faire du chiffrement symétrique. Le code complet se trouve [ici](https://github.com/superjeffcplusplus/DAA_keystore/blob/main/app/src/main/java/ch/heigvd/daa/keystore/EncryptorSym.kt). Il est inspiré de [ce repo Github](https://github.com/philipplackner/AndroidCrypto). 
+Pour bénéficier des fonctionnalités supplémentaires offertes par Android, il faut utiliser un KeyStore de type "AndroidKeyStore".
 
 ### Crypto Providers
 
@@ -32,13 +29,18 @@ for (p in providers) {
     }
 }
 ````
-"AndroidKeyStore" est à recommander si l'on veut se limiter à des algorithmes sûrs. Le *provider* "AndroidOpenSSL" peut être utile si la nécessité d'utilisé des algorithmes plus recommandés aujourd'hui, comme 3DES, se présente. "AndroidOpenSSL" propose aussi des algorithmes plus exotiques comme ChaCha20 (chiffrement symétrique).
+"AndroidKeyStore" est à recommander si l'on veut se limiter à des algorithmes sûrs. Le *provider* "AndroidOpenSSL" peut être utile si la nécessité d'utilisé des algorithmes plus recommandés aujourd'hui, comme 3DES, se présente. "AndroidOpenSSL" propose aussi des algorithmes plus exotiques comme ChaCha20 (chiffrement symétrique). Cependant, on perd la possibilité d'utiliser les classes de `android.security.keystore`, qui permettent de gérer automatiquement l'enregistrement des clefs dans le `KeyStore`.
 Liste exhaustive des algorithmes disponibles avec "AndroidKeyStore":
 ```
 EC, RSA, XDH, EC, RSA, XDH, AES, HmacSHA1, HmacSHA224, HmacSHA256, HmacSHA384, HmacSHA512, ECDH, XDH, AES, HmacSHA1, HmacSHA224, HmacSHA256, HmacSHA384, HmacSHA512
 ```
 
 ### La classe `EncryptorSym`
+
+L'import suivant est nécessaire pour utiliser l'AndroidKeyStore :
+```
+implementation "androidx.security:security-crypto:1.0.0"
+```
 
 Pour commencer, nous définissons un `companion object` pour définir les algorithmes choisis.
 
@@ -128,11 +130,18 @@ A partir des fonctionnalités introduites, une entrée textuelle est chiffrée p
 <picture> 
     <img  src="./assets/ExempleUtilisation.png" alt="Exemple d'utilisation de l'application"  width="230"  height="auto" style="display: block; margin: 0 auto"/>
 </picture>
-  
+
+Dans `MainActivity`, nous instancions `EncryptorSym` avec l'alias de clef :
+```
+private val encryptor = EncryptorSym("secret")
+```
+Cet alias va permettre d'utiliser toujours la même clef à chaque nouvelle ouverture de l'app.
 Cet exemple montre comment gérer de façon plus sécurisée des données dans une application de plus grande ampleur.  
 A noter que pour un même message, le chiffré est change à chaque chiffrement en raison du changement d'IV.
 
-
+## Problème résolu et limitations
+Grâce à *Android Keystore*, le développeur d'application Android n'aura qu'à ajouter quelques lignes de codes pour chiffrer des données. Il aura à choisir un algorithme parmi un choix limité. En outre, l'API d'utilisation du Keystore est faite de telle manière à éviter les erreurs comme la réutilisation de vecteurs d'initialisation (IV). Utiliser les API d'*Android Keystore* rend donc la gestion des clefs beaucoup plus facile et permet d'éviter certaines erreurs de programmation qui pourraient complètetment compromettre la confidentialité, l'intégrité et l'authenticité des données. Par exemple, l'algorithme de signature digitale asymétrique DSA nécessite de tirer une valeur aléatoire pour chaque signature. Si la même valeur est réutilisée pour 2 signatures différentes, alors il devient possible de retrouver la clef privée.  
+Par rapport aux limitations, il faut être conscient que l'*Android Keystore* est en fait une implémentation façon Android du KeyStore de la librarie `java.security`. Cette implémentation est utilisée lorsqu'on fait appel à  `KeyStore.getInstance("AndroidKeyStore")`. Les algorithmes sont limités. Comme nous l'avons vu, il est possible d'utiliser "AndroidOpenSSL" comme *Crypto provider* pour générer des clefs, chiffrer et déchiffrer. Cependant, nous n'avons pas trouvé le moyen de stocker ces clefs dans l'*Android Keystore*, car "AndroidOpenSSL" ne supporte pas la classe `KeyGenParameterSpec.Builder`, qui elle est ajoutée par `android.security.keystore.KeyGenParameterSpec`. En conclusion, comme souvent avec ces solutions "clefs en main", sortir des sentiers tracés implique beaucoup plus d'investissement en temps.
 
 ## Liens utiles
 

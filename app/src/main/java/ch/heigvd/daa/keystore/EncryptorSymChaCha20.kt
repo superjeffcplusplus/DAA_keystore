@@ -1,13 +1,12 @@
 package ch.heigvd.daa.keystore
 
-import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import java.security.KeyStore
-import java.security.spec.AlgorithmParameterSpec
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+
 
 class EncryptorSymChaCha20(private val keyAlias: String) {
 
@@ -23,14 +22,17 @@ class EncryptorSymChaCha20(private val keyAlias: String) {
 
     private fun generateKey(): SecretKey {
         val keyGenerator = KeyGenerator.getInstance(ALGORITHM, "AndroidOpenSSL")
-        val keyGenParameterSpec = KeyGenParameterSpec.Builder(
-            keyAlias,
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-        )
-            .setEncryptionPaddings(PADDING)
-            .build()
+        // Set key length to 256 bits
         keyGenerator.init(256)
-        return keyGenerator.generateKey()
+        val key =  keyGenerator.generateKey()
+        // Manually saves the key in keystore
+        // Throws java.lang.IllegalArgumentException: Unsupported secret key algorithm: ChaCha20
+//        keyStore.setEntry(
+//            keyAlias,
+//            KeyStore.SecretKeyEntry(key),
+//            KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT).build()
+//        )
+        return key
     }
 
     fun encrypt(toEncrypt: ByteArray): EncryptedFileBox {
@@ -57,22 +59,3 @@ class EncryptorSymChaCha20(private val keyAlias: String) {
 
 }
 
-//data class EncryptedFileBox(val iv: ByteArray, val cipherText: ByteArray) {
-//    override fun equals(other: Any?): Boolean {
-//        if (this === other) return true
-//        if (javaClass != other?.javaClass) return false
-//
-//        other as EncryptedFileBox
-//
-//        if (!iv.contentEquals(other.iv)) return false
-//        if (!cipherText.contentEquals(other.cipherText)) return false
-//
-//        return true
-//    }
-//
-//    override fun hashCode(): Int {
-//        var result = iv.contentHashCode()
-//        result = 31 * result + cipherText.contentHashCode()
-//        return result
-//    }
-//}
