@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
                 encryptedMsg
             )
             findViewById<TextView>(R.id.decrypted_msg).text =
-                "Decrypted message : " + decryptedMsg.toString()
+                "Decrypted message : " + decryptedMsg.decodeToString()
         }
     }
 }
