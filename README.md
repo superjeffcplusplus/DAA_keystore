@@ -98,8 +98,8 @@ Par rapport au chiffrement symétrique, si la clef n'est pas réutilisée très 
 
 ## Exemple complet
 
-[Notre exemple complet](https://github.com/superjeffcplusplus/DAA_keystore) est une petite application qui chiffre et déchiffre une entrée utilisateur. Cela peut servir de base pour la prise en main du `KeyStore`.  
-A partir des des fonctionnalités introduitent, une entrée textuelle est chiffrée puis affichée. On peut ensuite déchiffrer l'entrée afin de retrouver le texte original. 
+[Notre exemple complet](https://github.com/superjeffcplusplus/DAA_keystore) est une petite application qui chiffre et déchiffre une entrée utilisateur. Cela peut servir de base pour la prise en main du `KeyStore`. On y trouve plusieurs dépendances à intégrer dans le [build gradle module app](https://github.com/superjeffcplusplus/DAA_keystore/blob/0a891837c8db97c1c1a89545441e139ab97cdf74/app/build.gradle).
+A partir des fonctionnalités introduites, une entrée textuelle est chiffrée puis affichée. On peut ensuite déchiffrer l'entrée afin de retrouver le texte original. 
 
 <picture> 
     <img  src="./assets/ExempleUtilisation.png" alt="Exemple d'utilisation de l'application"  width="230"  height="400" style="display: block; margin: 0 auto"/>
