@@ -6,6 +6,7 @@ import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
 
 class EncryptorSym(private val keyAlias: String) {
@@ -42,9 +43,9 @@ class EncryptorSym(private val keyAlias: String) {
     }
 
     fun decrypt(toDecrypt: EncryptedFileBox): ByteArray {
-        val cipher = Cipher.getInstance(TRANSFORMATION).apply {
-            init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(toDecrypt.iv))
-        }
+        val cipher = Cipher.getInstance(TRANSFORMATION)
+        // Tag is 128 bits length (default)
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(128, toDecrypt.iv))
         return cipher.doFinal(toDecrypt.cipherText)
     }
 

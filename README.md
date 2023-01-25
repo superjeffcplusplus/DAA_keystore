@@ -80,10 +80,10 @@ data class EncryptedFileBox(val iv: ByteArray, val cipherText: ByteArray) {
 ### Déchiffrement
 ```Kotlin
 fun decrypt(toDecrypt: EncryptedFileBox): ByteArray {
-        val cipher = Cipher.getInstance(TRANSFORMATION).apply {
-            init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(toDecrypt.iv))
-        }
-        return cipher.doFinal(toDecrypt.cipherText)
+    val cipher = Cipher.getInstance(TRANSFORMATION)
+    // Tag is 128 bits length (default)
+    cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(128, toDecrypt.iv))
+    return cipher.doFinal(toDecrypt.cipherText)
 }
 ```
 Pour déchiffrer, il faut simplement requérir une instance de `Cipher` avec la bonne transformation.

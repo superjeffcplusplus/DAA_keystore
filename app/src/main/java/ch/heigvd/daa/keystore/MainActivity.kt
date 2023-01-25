@@ -28,14 +28,16 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.encrypt_button).setOnClickListener {
             encryptedMsg = keystore.encrypt(textToEncrypt.text.toString().encodeToByteArray())
-            findViewById<TextView>(R.id.encrypted_msg).text = encryptedMsg.cipherText.toString()
+            findViewById<TextView>(R.id.encrypted_msg).text =
+                "Encrypted message : ${encryptedMsg.cipherText}"
         }
 
         findViewById<Button>(R.id.decrypt_button).setOnClickListener {
             decryptedMsg = keystore.decrypt(
                 encryptedMsg
             )
-            findViewById<TextView>(R.id.decrypted_msg).text = decryptedMsg.toString()
+            findViewById<TextView>(R.id.decrypted_msg).text =
+                "Decrypted message : " + decryptedMsg.toString()
         }
     }
 }
