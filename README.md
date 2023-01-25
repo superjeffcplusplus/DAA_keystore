@@ -100,8 +100,10 @@ Par rapport au chiffrement symétrique, si la clef n'est pas réutilisée très 
 
 [Notre exemple complet](https://github.com/superjeffcplusplus/DAA_keystore) est une petite application qui chiffre et déchiffre une entrée utilisateur. Cela peut servir de base pour la prise en main du `KeyStore`.  
 A partir des des fonctionnalités introduitent, une entrée textuelle est chiffrée puis affichée. On peut ensuite déchiffrer l'entrée afin de retrouver le texte original. 
-  
-![](./assets/ExempleUtilisation.png)
+
+<picture> 
+    <img  src="./assets/ExempleUtilisation.png" alt="Exemple d'utilisation de l'application"  width="230"  height="400" style="display: block; margin: 0 auto"/>
+</picture>
   
 Cet exemple montre comment gérer de façon plus sécurisée des données dans une application de plus grande ampleur.
 
