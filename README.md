@@ -138,6 +138,8 @@ private val encryptor = EncryptorSym("secret")
 Cet alias va permettre d'utiliser toujours la même clef à chaque nouvelle ouverture de l'app.
 Cet exemple montre comment gérer de façon plus sécurisée des données dans une application de plus grande ampleur.  
 A noter que pour un même message, le chiffré est change à chaque chiffrement en raison du changement d'IV.
+  
+Cet exemple montre comment on pourrait gérer de façon plus sécurisée des données dans une application de plus grande ampleur.
 
 ## Problème résolu et limitations
 Grâce à *Android Keystore*, le développeur d'application Android n'aura qu'à ajouter quelques lignes de codes pour chiffrer des données. Il aura à choisir un algorithme parmi un choix limité. En outre, l'API d'utilisation du Keystore est faite de telle manière à éviter les erreurs comme la réutilisation de vecteurs d'initialisation (IV). Utiliser les API d'*Android Keystore* rend donc la gestion des clefs beaucoup plus facile et permet d'éviter certaines erreurs de programmation qui pourraient complètetment compromettre la confidentialité, l'intégrité et l'authenticité des données. Par exemple, l'algorithme de signature digitale asymétrique DSA nécessite de tirer une valeur aléatoire pour chaque signature. Si la même valeur est réutilisée pour 2 signatures différentes, alors il devient possible de retrouver la clef privée.  
