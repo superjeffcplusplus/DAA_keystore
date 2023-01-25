@@ -1,3 +1,4 @@
+Damien Maier, Vincent Peer, Jean-François Pasche
 # Introduction à *Android Keystore System*
 
 Android met à disposition un outil spécifique dédié au stockage des données sensibles, le *Keystore System*.  A son apparition dans la version 1.6 d'Android, il n'était prévu que d'offrir une protection particulière aux clés de chiffrement utilisées dans les communications Wifi d'une part et dans les communications VPN d'autre part. Toutefois, depuis la version 4.0 du système d'exploitation pour mobiles (API level 14), ce module est ouvert à toutes les applications nécessitant de chiffrer des données. C'est utile non seulement pour les clefs cryptographiques, mais aussi pour les fichiers sensibles, peut importe son type.  
@@ -29,8 +30,8 @@ for (p in providers) {
     }
 }
 ````
-"AndroidKeyStore" est à recommander si l'on veut se limiter à des algorithmes sûrs. Le *provider* "AndroidOpenSSL" peut être utile si la nécessité d'utilisé des algorithmes plus recommandés aujourd'hui, comme 3DES, se présente. "AndroidOpenSSL" propose aussi des algorithmes plus exotiques comme ChaCha20 (chiffrement symétrique). Cependant, on perd la possibilité d'utiliser les classes de `android.security.keystore`, qui permettent de gérer automatiquement l'enregistrement des clefs dans le `KeyStore`.
-Liste exhaustive des algorithmes disponibles avec "AndroidKeyStore":
+"AndroidKeyStore" est à recommander si l'on veut se limiter à des algorithmes sûrs. Le *provider* "AndroidOpenSSL" peut être utile si la nécessité d'utilisé des algorithmes plus recommandés aujourd'hui, comme 3DES, se présente. "AndroidOpenSSL" propose aussi des algorithmes plus exotiques comme ChaCha20 (chiffrement symétrique). Cependant, on perd la possibilité d'utiliser les classes de `android.security.keystore`, qui permettent de gérer automatiquement l'enregistrement des clefs dans le `KeyStore` d'Android. Du moins cela devient beaucoup plus compliqué d'enregistrer les clefs.
+Voici une liste exhaustive des algorithmes disponibles avec "AndroidKeyStore":
 ```
 EC, RSA, XDH, EC, RSA, XDH, AES, HmacSHA1, HmacSHA224, HmacSHA256, HmacSHA384, HmacSHA512, ECDH, XDH, AES, HmacSHA1, HmacSHA224, HmacSHA256, HmacSHA384, HmacSHA512
 ```
@@ -55,6 +56,14 @@ companion object {
 Ici, `BLOCK_MODE_GCM` est un nom trompeur. En effet, GCM n'est pas à proprement parler un mode de chiffrement, mais un algorithme de chiffrement authentifié utilisant en fait le mode CTR pour le chiffrement des donnée. CTR étant un mode de chiffrement par flux, il ne nécessite pas de padding, d'où la valeur `ENCRYPTION_PADDING_NONE` pour le padding.
 `TRANSFORMATION` est la chaîne de cractère qui représente les choix effectué. Ici, elle vaut `AES/GCM/NoPadding`. De manière générale, elle suit la forme [`algorithm/mode/padding`](https://developer.android.com/reference/javax/crypto/Cipher). Beaucoup de combinaisons sont possibles. Nous ferons quelques recommendations d'algorithmes par la suite.
 
+### Création du KeyStore
+
+```Kotlin
+private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+        load(null)
+}
+```
+
 ### Génration de clef
 
 ```Kotlin
@@ -72,7 +81,7 @@ pivate fun generateKey(): SecretKey {
     }
 ```
 
-A bien noter ici que nous choisissons "AndroidKeyStore" comme *provider*.  
+A bien noter ici que nous choisissons "AndroidKeyStore" comme *provider*. Android a choisi le même nom que pour le type de `KeyStore`, mais attention ce n'est pas la même chose ! Cependant, utiliser un autre *provider* risque d'empêcher l'utilisation de l'Android KeyStore ([voir exemple ChaCha20](https://github.com/superjeffcplusplus/DAA_keystore/blob/main/app/src/main/java/ch/heigvd/daa/keystore/EncryptorSymChaCha20.kt)).
 `KeyGenParameterSpec` permet de définir l'usage que l'on va faire de la clef. Cela permet d'améliorer la gestion des clefs. C'est particulièrement utile dans le cadre de la cryptographie asymétrique en empêchant de signer avec une clef publique par exemple.  
 `keyAlias` est une propriété de la classe. C'est en quelque sorte le nom que l'on veut donner à la clef.
 
@@ -118,9 +127,9 @@ La documentation Android propose [un petit guide sur la cryptographie](https://d
 ![](./assets/algos.png)
 
 Par rapport au chiffrement symétrique, si la clef n'est pas réutilisée très souvent et que les données à chiffrer n'excèdent jamais 64GB, nous conseillons d'utiliser GCM. En fait, c'est le  cas pour la plupart des utilisations. ECB seul n'authentifie pas les données, donc si on veut garantir l'intégrité et l'authenticité des données en plus de la confidentialité, il faut l'utiliser en combinaison d'un MAC. Dans ce cas, nous conseillons de chiffrer puis d'authentifier les données (Encrypt-Then-Mac).  
-Android propose aussi ChaCha20 comme pour chiffrer les données, avec Poly1305. C'est un bon algorithme et au goût du jour, qui a comme désavantage de ne pas bénéficier d'instructions CPU spécifiques, contrairement à AES. Dans un environnment ne disposant pas d'accélération matérielle AES, ChaCha20 sera cependant plus rapide qu'AES. Nous fournissons [un exemple d'utilisation de ChaCha20]() avec Poly1305 pour l'authentification.
 
-
+## Utiliser AndroidOpenSSL
+Android propose aussi ChaCha20 pour chiffrer les données, avec Poly1305 pour l'authentification des données. C'est un bon algorithme et il est au goût du jour. Il a comme désavantage de ne pas bénéficier d'instructions CPU spécifiques, contrairement à AES. Dans un environnment ne disposant pas d'accélération matérielle AES, ChaCha20 sera cependant plus rapide qu'AES. Nous fournissons [un exemple d'utilisation de ChaCha20](https://github.com/superjeffcplusplus/DAA_keystore/blob/main/app/src/main/java/ch/heigvd/daa/keystore/EncryptorSymChaCha20.kt) avec Poly1305 pour l'authentification. Il nécessite d'utiliser "AndroidOpenSSL" comme *Crypto Provider* et nous n'avons en fait pas réussi à utiliser *Android KeyStore* dans ce cas.
 
 ## Exemple complet
 
@@ -138,8 +147,6 @@ private val encryptor = EncryptorSym("secret")
 Cet alias va permettre d'utiliser toujours la même clef à chaque nouvelle ouverture de l'app.
 Cet exemple montre comment gérer de façon plus sécurisée des données dans une application de plus grande ampleur.  
 A noter que pour un même message, le chiffré est change à chaque chiffrement en raison du changement d'IV.
-  
-Cet exemple montre comment on pourrait gérer de façon plus sécurisée des données dans une application de plus grande ampleur.
 
 ## Problème résolu et limitations
 Grâce à *Android Keystore*, le développeur d'application Android n'aura qu'à ajouter quelques lignes de codes pour chiffrer des données. Il aura à choisir un algorithme parmi un choix limité. En outre, l'API d'utilisation du Keystore est faite de telle manière à éviter les erreurs comme la réutilisation de vecteurs d'initialisation (IV). Utiliser les API d'*Android Keystore* rend donc la gestion des clefs beaucoup plus facile et permet d'éviter certaines erreurs de programmation qui pourraient complètetment compromettre la confidentialité, l'intégrité et l'authenticité des données. Par exemple, l'algorithme de signature digitale asymétrique DSA nécessite de tirer une valeur aléatoire pour chaque signature. Si la même valeur est réutilisée pour 2 signatures différentes, alors il devient possible de retrouver la clef privée.  
