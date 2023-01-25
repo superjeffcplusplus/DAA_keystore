@@ -105,7 +105,7 @@ A partir des fonctionnalités introduites, une entrée textuelle est chiffrée p
     <img  src="./assets/ExempleUtilisation.png" alt="Exemple d'utilisation de l'application"  width="230"  height="300" style="display: block; margin: 0 auto"/>
 </picture>
   
-Cet exemple montre comment gérer de façon plus sécurisée des données dans une application de plus grande ampleur.
+Cet exemple montre comment on pourrait gérer de façon plus sécurisée des données dans une application de plus grande ampleur.
 
 
 
