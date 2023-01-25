@@ -19,11 +19,30 @@ Android propose 2 API pour la gestion des données chiffrées:
 Dans ce qui suit, nous allons nous intéresser exclusivement à l'API `KeyStore`.  
 Le pincipe de base est que les clefs sont générées avec une alias, qui sert ensuite à les retrouver. C'est la seule chose que le développeur doit sauvegarder. Ci-dessous, nous montrons un exemple de classe qui permet de faire du chiffrement symétrique. Le code complet se trouve [ici](https://github.com/superjeffcplusplus/DAA_keystore/blob/main/app/src/main/java/ch/heigvd/daa/keystore/EncryptorSym.kt). Il est inspiré de [ce repo Github](https://github.com/philipplackner/AndroidCrypto). 
 
+### Crypto Providers
+
+La [page de la documentation Android](https://developer.android.com/reference/kotlin/javax/crypto/Cipher) dédiée à la classe `Cipher` peut induire en erreur quant aux algorithmes disponibles. En effet, elle ne mentionne pas que les algorithmes disponibles ne dépandent pas de la classe `Cipher` en soi mais du *Crypto Provider* passé en argument à la fonction `KeyGenerator.getInstance`. Cet extrait de code permet de lister ces *providers* ainsi que les algorithmes disponibles pour chacun d'eux :
+
+```Kotlin
+val providers = Security.getProviders()
+for (p in providers) {
+    Log.i("CRYPTO", "provider: " + p.name)
+    for (s in p.services) {
+        Log.i("CRYPTO", " algorithm: " + s.algorithm)
+    }
+}
+````
+"AndroidKeyStore" est à recommander si l'on veut se limiter à des algorithmes sûrs. Le *provider* "AndroidOpenSSL" peut être utile si la nécessité d'utilisé des algorithmes plus recommandés aujourd'hui, comme 3DES, se présente. "AndroidOpenSSL" propose aussi des algorithmes plus exotiques comme ChaCha20 (chiffrement symétrique).
+Liste exhaustive des algorithmes disponibles avec "AndroidKeyStore":
+```
+EC, RSA, XDH, EC, RSA, XDH, AES, HmacSHA1, HmacSHA224, HmacSHA256, HmacSHA384, HmacSHA512, ECDH, XDH, AES, HmacSHA1, HmacSHA224, HmacSHA256, HmacSHA384, HmacSHA512
+```
+
 ### La classe `EncryptorSym`
 
 Pour commencer, nous définissons un `companion object` pour définir les algorithmes choisis.
 
-```
+```Kotlin
 companion object {
     private const val ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
     private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_GCM
@@ -32,7 +51,7 @@ companion object {
 }
 ```
 Ici, `BLOCK_MODE_GCM` est un nom trompeur. En effet, GCM n'est pas à proprement parler un mode de chiffrement, mais un algorithme de chiffrement authentifié utilisant en fait le mode CTR pour le chiffrement des donnée. CTR étant un mode de chiffrement par flux, il ne nécessite pas de padding, d'où la valeur `ENCRYPTION_PADDING_NONE` pour le padding.
-`TRANSFORMATION` est la chaîne de cractère qui représente les choix effectué. Ici, elle vaut `AES/GCM/NoPadding`. Beaucoup de combinaisons sont possibles. Nous ferons quelques recommendations d'algorithmes par la suite.
+`TRANSFORMATION` est la chaîne de cractère qui représente les choix effectué. Ici, elle vaut `AES/GCM/NoPadding`. De manière générale, elle suit la forme [`algorithm/mode/padding`](https://developer.android.com/reference/javax/crypto/Cipher). Beaucoup de combinaisons sont possibles. Nous ferons quelques recommendations d'algorithmes par la suite.
 
 ### Génration de clef
 
@@ -50,7 +69,9 @@ pivate fun generateKey(): SecretKey {
         return keyGenerator.generateKey()
     }
 ```
-`KeyGenParameterSpec` permet de définir l'usage quel l'on va faire de la clef. Cela permet d'améliorer la gestion des clefs. C'est particulièrement utile dans le cadre de la cryptographie asymétrique en empêchant de signer avec une clef publique par exemple.  
+
+A bien noter ici que nous choisissons "AndroidKeyStore" comme *provider*.  
+`KeyGenParameterSpec` permet de définir l'usage que l'on va faire de la clef. Cela permet d'améliorer la gestion des clefs. C'est particulièrement utile dans le cadre de la cryptographie asymétrique en empêchant de signer avec une clef publique par exemple.  
 `keyAlias` est une propriété de la classe. C'est en quelque sorte le nom que l'on veut donner à la clef.
 
 ### Chiffrement
@@ -94,7 +115,10 @@ La documentation Android propose [un petit guide sur la cryptographie](https://d
 
 ![](./assets/algos.png)
 
-Par rapport au chiffrement symétrique, si la clef n'est pas réutilisée très souvent et que les données à chiffrer n'excèdent jamais 64GB, nous conseillons d'utiliser GCM. En fait, c'est le meilleur cas pour la plupart des utilisations. ECB seul n'authentifie pas les données, donc si on veut garantir l'intégrité et l'authenticité des données en plus de la confidentialité, il faut l'utiliser en combinaison d'un MAC. Dans ce cas, nous conseillons de chiffrer puis d'authentifier les données (Encrypt-Then-Mac).
+Par rapport au chiffrement symétrique, si la clef n'est pas réutilisée très souvent et que les données à chiffrer n'excèdent jamais 64GB, nous conseillons d'utiliser GCM. En fait, c'est le  cas pour la plupart des utilisations. ECB seul n'authentifie pas les données, donc si on veut garantir l'intégrité et l'authenticité des données en plus de la confidentialité, il faut l'utiliser en combinaison d'un MAC. Dans ce cas, nous conseillons de chiffrer puis d'authentifier les données (Encrypt-Then-Mac).  
+Android propose aussi ChaCha20 comme pour chiffrer les données, avec Poly1305. C'est un bon algorithme et au goût du jour, qui a comme désavantage de ne pas bénéficier d'instructions CPU spécifiques, contrairement à AES. Dans un environnment ne disposant pas d'accélération matérielle AES, ChaCha20 sera cependant plus rapide qu'AES. Nous fournissons [un exemple d'utilisation de ChaCha20]() avec Poly1305 pour l'authentification.
+
+
 
 ## Exemple complet
 
@@ -102,10 +126,11 @@ Par rapport au chiffrement symétrique, si la clef n'est pas réutilisée très 
 A partir des fonctionnalités introduites, une entrée textuelle est chiffrée puis affichée. On peut ensuite déchiffrer l'entrée afin de retrouver le texte original. 
 
 <picture> 
-    <img  src="./assets/ExempleUtilisation.png" alt="Exemple d'utilisation de l'application"  width="230"  height="300" style="display: block; margin: 0 auto"/>
+    <img  src="./assets/ExempleUtilisation.png" alt="Exemple d'utilisation de l'application"  width="230"  height="auto" style="display: block; margin: 0 auto"/>
 </picture>
   
-Cet exemple montre comment gérer de façon plus sécurisée des données dans une application de plus grande ampleur.
+Cet exemple montre comment gérer de façon plus sécurisée des données dans une application de plus grande ampleur.  
+A noter que pour un même message, le chiffré est change à chaque chiffrement en raison du changement d'IV.
 
 
 

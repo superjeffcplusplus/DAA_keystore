@@ -7,12 +7,14 @@ package ch.heigvd.daa.keystore
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AppCompatActivity
+import java.security.Security
 import java.util.Base64
 
 
@@ -20,6 +22,9 @@ import java.util.Base64
  * Displays a personalized welcome message and allows the user to edit his name.
  */
 class MainActivity : AppCompatActivity() {
+    // Be aware that the key alias is linked with the algorithm type.
+    // Use "secret" with EncryptorSymChaCha20 will throw.
+    // private val encryptor = EncryptorSymChaCha20("secretChaCha20")
     private val encryptor = EncryptorSym("secret")
     private lateinit var encryptedMsg: EncryptedFileBox
     @SuppressLint("SetTextI18n")
