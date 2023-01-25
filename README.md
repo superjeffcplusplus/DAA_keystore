@@ -102,7 +102,7 @@ Par rapport au chiffrement symétrique, si la clef n'est pas réutilisée très 
 A partir des fonctionnalités introduites, une entrée textuelle est chiffrée puis affichée. On peut ensuite déchiffrer l'entrée afin de retrouver le texte original. 
 
 <picture> 
-    <img  src="./assets/ExempleUtilisation.png" alt="Exemple d'utilisation de l'application"  width="230"  height="400" style="display: block; margin: 0 auto"/>
+    <img  src="./assets/ExempleUtilisation.png" alt="Exemple d'utilisation de l'application"  width="230"  height="300" style="display: block; margin: 0 auto"/>
 </picture>
   
 Cet exemple montre comment gérer de façon plus sécurisée des données dans une application de plus grande ampleur.
